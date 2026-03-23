@@ -1,18 +1,50 @@
 {
-  "version": 1,
+  "version": 2,
   "updated": "2026-03-23",
   "models": {
-    "claude-opus-4-6": {
+    "claude-opus-4": {
       "input_per_1m": 15.00,
       "output_per_1m": 75.00,
       "cache_read_per_1m": 1.50,
       "cache_create_per_1m": 18.75
+    },
+    "claude-opus-4-5": {
+      "input_per_1m": 5.00,
+      "output_per_1m": 25.00,
+      "cache_read_per_1m": 0.50,
+      "cache_create_per_1m": 6.25
+    },
+    "claude-opus-4-6": {
+      "input_per_1m": 5.00,
+      "output_per_1m": 25.00,
+      "cache_read_per_1m": 0.50,
+      "cache_create_per_1m": 6.25
+    },
+    "claude-sonnet-4-5": {
+      "input_per_1m": 3.00,
+      "output_per_1m": 15.00,
+      "cache_read_per_1m": 0.30,
+      "cache_create_per_1m": 3.75
     },
     "claude-sonnet-4-6": {
       "input_per_1m": 3.00,
       "output_per_1m": 15.00,
       "cache_read_per_1m": 0.30,
       "cache_create_per_1m": 3.75
+    },
+    "claude-haiku-4-5": {
+      "input_per_1m": 1.00,
+      "output_per_1m": 5.00,
+      "cache_read_per_1m": 0.10,
+      "cache_create_per_1m": 1.25
+    },
+    "gpt-5": {
+      "input_per_1m": 2.00,
+      "output_per_1m": 8.00
+    },
+    "gpt-5.4": {
+      "input_per_1m": 2.00,
+      "output_per_1m": 8.00
     },
     "o3": {
       "input_per_1m": 2.00,
@@ -21,14 +53,10 @@
     "o4-mini": {
       "input_per_1m": 0.50,
       "output_per_1m": 2.00
-    },
-    "codex-mini": {
-      "input_per_1m": 0.25,
-      "output_per_1m": 1.00
     }
   },
   "defaults": {
     "claude": "claude-sonnet-4-6",
-    "codex": "o3"
+    "codex": "gpt-5.4"
   }
 }

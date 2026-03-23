@@ -9,8 +9,8 @@ func TestLoadEmbedded(t *testing.T) {
 	if err != nil {
 		t.Fatalf("LoadEmbedded() error: %v", err)
 	}
-	if p.Version != 1 {
-		t.Errorf("Version = %d, want 1", p.Version)
+	if p.Version != 2 {
+		t.Errorf("Version = %d, want 2", p.Version)
 	}
 	if len(p.Models) == 0 {
 		t.Error("Models is empty")

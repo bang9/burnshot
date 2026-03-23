@@ -18,10 +18,10 @@ func setupClaudeTestData(t *testing.T) string {
 	os.MkdirAll(projectDir, 0755)
 
 	// Session JSONL: 2 messages in window (10:00, 10:01 UTC), 1 outside (03:00 UTC), 1 without usage
-	jsonl := `{"timestamp":"2026-03-23T10:00:00.000Z","sessionId":"sess1","message":{"usage":{"input_tokens":100,"output_tokens":500,"cache_read_input_tokens":5000,"cache_creation_input_tokens":1000}}}
-{"timestamp":"2026-03-23T10:01:00.000Z","sessionId":"sess1","message":{"usage":{"input_tokens":200,"output_tokens":800,"cache_read_input_tokens":3000,"cache_creation_input_tokens":500}}}
-{"timestamp":"2026-03-23T03:00:00.000Z","sessionId":"sess1","message":{"usage":{"input_tokens":50,"output_tokens":100,"cache_read_input_tokens":1000,"cache_creation_input_tokens":200}}}
-{"timestamp":"2026-03-23T10:00:30.000Z","sessionId":"sess1","type":"progress","data":{"type":"tool_use"}}
+	jsonl := `{"timestamp":"2026-03-23T10:00:00.000Z","sessionId":"sess1","uuid":"uuid-1","message":{"id":"msg-1","model":"claude-opus-4-6-20260301","usage":{"input_tokens":100,"output_tokens":500,"cache_read_input_tokens":5000,"cache_creation_input_tokens":1000}}}
+{"timestamp":"2026-03-23T10:01:00.000Z","sessionId":"sess1","uuid":"uuid-2","message":{"id":"msg-2","model":"claude-opus-4-6-20260301","usage":{"input_tokens":200,"output_tokens":800,"cache_read_input_tokens":3000,"cache_creation_input_tokens":500}}}
+{"timestamp":"2026-03-23T03:00:00.000Z","sessionId":"sess1","uuid":"uuid-3","message":{"id":"msg-3","usage":{"input_tokens":50,"output_tokens":100,"cache_read_input_tokens":1000,"cache_creation_input_tokens":200}}}
+{"timestamp":"2026-03-23T10:00:30.000Z","sessionId":"sess1","uuid":"uuid-4","type":"progress","data":{"type":"tool_use"}}
 `
 	os.WriteFile(filepath.Join(projectDir, "sess1.jsonl"), []byte(jsonl), 0644)
 
@@ -51,12 +51,18 @@ func TestClaudeCollector_Collect(t *testing.T) {
 	}
 
 	// 2 messages in window (10:00 and 10:01), the 03:00 one is outside
-	// input (includes cache): (100+5000+1000) + (200+3000+500) = 9800
+	// input: 100 + 200 = 300
 	// output: 500 + 800 = 1300
-	// total: 9800 + 1300 = 11100
+	// cache_read: 5000 + 3000 = 8000
+	// cache_create: 1000 + 500 = 1500
+	// total: 300 + 1300 + 8000 + 1500 = 11100
 	expectedTotal := int64(11100)
 	if s.TotalTokens != expectedTotal {
 		t.Errorf("TotalTokens = %d, want %d", s.TotalTokens, expectedTotal)
+	}
+	// Model should be normalized (strip date suffix)
+	if s.Model != "claude-opus-4-6" {
+		t.Errorf("Model = %q, want \"claude-opus-4-6\"", s.Model)
 	}
 }
 
