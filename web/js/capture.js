@@ -1,4 +1,5 @@
 import { trackEvent } from './firebase.js';
+import { getCropFactor } from './camera.js';
 
 export function initCapture(button, video, overlayCanvas, compositeCanvas) {
   const ctx = compositeCanvas.getContext('2d');
@@ -7,10 +8,10 @@ export function initCapture(button, video, overlayCanvas, compositeCanvas) {
   button.addEventListener('click', () => {
     trackEvent('photo_captured');
 
-    // Draw camera frame (center-cropped to 1:1)
+    // Draw camera frame (center-cropped to 1:1, with zoom crop factor)
     const vw = video.videoWidth;
     const vh = video.videoHeight;
-    const side = Math.min(vw, vh);
+    const side = Math.min(vw, vh) / getCropFactor();
     const sx = (vw - side) / 2;
     const sy = (vh - side) / 2;
     ctx.drawImage(video, sx, sy, side, side, 0, 0, SIZE, SIZE);
