@@ -254,4 +254,121 @@ const glass = {
   }
 };
 
-export const TEMPLATES = [minimal, hud, bold, glass];
+// Template 5: VS (Claude vs Codex breakdown)
+const versus = {
+  name: 'VS',
+  render(ctx, w, h, data) {
+    const claudeColor = '#c084fc'; // purple
+    const codexColor = '#34d399';  // green
+    const by = data.tokens.by_source || {};
+    const claudeTokens = by.claude || 0;
+    const codexTokens = by.codex || 0;
+    const total = claudeTokens + codexTokens || 1;
+    const claudePct = Math.round((claudeTokens / total) * 100);
+    const codexPct = 100 - claudePct;
+
+    // Bottom gradient
+    const grad = ctx.createLinearGradient(0, h * 0.35, 0, h);
+    grad.addColorStop(0, 'rgba(0,0,0,0)');
+    grad.addColorStop(1, 'rgba(0,0,0,0.9)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, h * 0.35, w, h * 0.65);
+
+    const pad = 20;
+    const barY = h - 150;
+
+    // Title
+    ctx.font = '700 10px monospace';
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.fillText('BURNSHOT', pad, barY - 60);
+    ctx.textAlign = 'right';
+    ctx.font = '400 10px monospace';
+    ctx.fillText(`${formatDate(data.date)} · ${formatTime(data.ts, data.tz)}`, w - pad, barY - 60);
+    ctx.textAlign = 'left';
+
+    // Total
+    ctx.font = '800 28px system-ui';
+    ctx.fillStyle = '#fff';
+    ctx.fillText(formatTokens(total), pad, barY - 30);
+    ctx.font = '400 10px monospace';
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.fillText(`tokens · $${data.cost.toFixed(2)}`, pad + ctx.measureText(formatTokens(total)).width + 8, barY - 30);
+
+    // Percent bar
+    const barW = w - pad * 2;
+    const barH = 20;
+    const claudeW = Math.max(barW * (claudePct / 100), claudePct > 0 ? 4 : 0);
+    const codexW = barW - claudeW;
+
+    // Claude bar (left)
+    if (claudeW > 0) {
+      ctx.fillStyle = claudeColor;
+      ctx.beginPath();
+      ctx.roundRect(pad, barY, claudeW, barH, claudeW >= barW ? 6 : [6, 0, 0, 6]);
+      ctx.fill();
+    }
+
+    // Codex bar (right)
+    if (codexW > 0) {
+      ctx.fillStyle = codexColor;
+      ctx.beginPath();
+      ctx.roundRect(pad + claudeW, barY, codexW, barH, codexW >= barW ? 6 : [0, 6, 6, 0]);
+      ctx.fill();
+    }
+
+    // Percent labels on bar
+    ctx.font = '700 11px system-ui';
+    if (claudePct > 15) {
+      ctx.fillStyle = '#fff';
+      ctx.fillText(`${claudePct}%`, pad + 6, barY + 14);
+    }
+    if (codexPct > 15) {
+      ctx.fillStyle = '#fff';
+      ctx.textAlign = 'right';
+      ctx.fillText(`${codexPct}%`, w - pad - 6, barY + 14);
+      ctx.textAlign = 'left';
+    }
+
+    // VS detail rows
+    const detailY = barY + barH + 20;
+    const halfW = (w - pad * 2) / 2;
+
+    // Claude side (left)
+    ctx.fillStyle = claudeColor;
+    ctx.font = '700 9px monospace';
+    ctx.fillText('CLAUDE', pad, detailY);
+    ctx.fillStyle = '#fff';
+    ctx.font = '700 20px system-ui';
+    ctx.fillText(formatTokens(claudeTokens), pad, detailY + 22);
+    ctx.font = '400 10px monospace';
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.fillText(`${data.sessions.claude} sessions`, pad, detailY + 38);
+
+    // Codex side (right)
+    ctx.textAlign = 'right';
+    ctx.fillStyle = codexColor;
+    ctx.font = '700 9px monospace';
+    ctx.fillText('CODEX', w - pad, detailY);
+    ctx.fillStyle = '#fff';
+    ctx.font = '700 20px system-ui';
+    ctx.fillText(formatTokens(codexTokens), w - pad, detailY + 22);
+    ctx.font = '400 10px monospace';
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.fillText(`${data.sessions.codex} sessions`, w - pad, detailY + 38);
+    ctx.textAlign = 'left';
+
+    // VS divider
+    ctx.textAlign = 'center';
+    ctx.font = '800 14px system-ui';
+    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+    ctx.fillText('VS', w / 2, detailY + 22);
+    ctx.textAlign = 'left';
+
+    // Period at bottom
+    ctx.font = '400 9px monospace';
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.fillText(`${data.period.from}–${data.period.to}`, pad, h - 16);
+  }
+};
+
+export const TEMPLATES = [minimal, hud, bold, glass, versus];
