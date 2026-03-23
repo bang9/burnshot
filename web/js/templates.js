@@ -56,7 +56,7 @@ const minimal = {
     ctx.fillText(formatNumber(data.tokens.total), 20, y - 60);
 
     ctx.font = '500 11px monospace';
-    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
     ctx.fillText(`tokens · ${data.period.from}–${data.period.to}`, 20, y - 44);
 
     ctx.font = '600 18px system-ui';
@@ -64,13 +64,13 @@ const minimal = {
     ctx.fillText(`$${data.cost.toFixed(2)}`, 20, y - 20);
     ctx.fillText(`${data.sessions.total}`, 100, y - 20);
 
-    ctx.font = '400 9px monospace';
-    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.font = '400 11px monospace';
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
     ctx.fillText('COST', 20, y - 8);
     ctx.fillText('SESSIONS', 100, y - 8);
 
-    ctx.font = '500 10px monospace';
-    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.font = '500 11px monospace';
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
     ctx.fillText('BURNSHOT', 20, y);
   }
 };
@@ -82,7 +82,7 @@ const hud = {
     const green = '#00ff88';
 
     // Top bar
-    ctx.font = '600 9px monospace';
+    ctx.font = '600 11px monospace';
     ctx.fillStyle = green;
     ctx.fillText('BURNSHOT', 16, 20);
     ctx.font = '400 11px monospace';
@@ -90,7 +90,7 @@ const hud = {
     ctx.fillText(`${formatDate(data.date)} · ${formatTime(data.ts, data.tz)}`, 16, 34);
 
     ctx.textAlign = 'right';
-    ctx.font = '400 9px monospace';
+    ctx.font = '400 11px monospace';
     ctx.fillStyle = 'rgba(0,255,136,0.6)';
     ctx.fillText(`${data.period.from}–${data.period.to}`, w - 16, 20);
     ctx.textAlign = 'left';
@@ -110,7 +110,7 @@ const hud = {
     const col2 = w / 2 + 4;
     let row = panelY + 20;
 
-    ctx.font = '600 9px monospace';
+    ctx.font = '600 11px monospace';
     ctx.fillStyle = 'rgba(0,255,136,0.6)';
     ctx.fillText('TOKENS', col1, row);
     ctx.fillText('COST', col2, row);
@@ -121,7 +121,7 @@ const hud = {
     ctx.fillText(`$${data.cost.toFixed(2)}`, col2, row);
 
     row += 20;
-    ctx.font = '600 9px monospace';
+    ctx.font = '600 11px monospace';
     ctx.fillStyle = 'rgba(0,255,136,0.6)';
     ctx.fillText('SESSIONS', col1, row);
     ctx.fillText('CLI', col2, row);
@@ -167,18 +167,18 @@ const bold = {
       ctx.font = '800 22px system-ui';
       ctx.fillStyle = '#fff';
       ctx.fillText(val, x, baseY - 30);
-      ctx.font = '500 9px system-ui';
-      ctx.fillStyle = 'rgba(255,255,255,0.5)';
+      ctx.font = '500 11px system-ui';
+      ctx.fillStyle = 'rgba(255,255,255,0.55)';
       ctx.fillText(label, x, baseY - 18);
       x += 80;
     }
 
     // Bottom bar
-    ctx.font = '700 10px system-ui';
-    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.font = '700 11px system-ui';
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
     ctx.fillText('BURNSHOT', 20, baseY);
     ctx.textAlign = 'right';
-    ctx.font = '400 10px monospace';
+    ctx.font = '400 11px monospace';
     ctx.fillText(`${formatDate(data.date)} · ${formatTime(data.ts, data.tz)}`, w - 20, baseY);
     ctx.textAlign = 'left';
   }
@@ -210,7 +210,7 @@ const glass = {
     ctx.fillText('BURNSHOT', cardX + 20, y);
     ctx.textAlign = 'right';
     ctx.font = '400 11px monospace';
-    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
     ctx.fillText(formatDate(data.date).slice(5), cardX + cardW - 20, y);
     ctx.textAlign = 'left';
 
@@ -220,8 +220,8 @@ const glass = {
     ctx.fillText(formatNumber(data.tokens.total), cardX + 20, y);
 
     y += 16;
-    ctx.font = '400 10px monospace';
-    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.font = '400 11px monospace';
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
     ctx.fillText(`tokens · ${data.period.from}–${data.period.to}`, cardX + 20, y);
 
     // Divider
@@ -246,8 +246,8 @@ const glass = {
       ctx.font = '700 16px system-ui';
       ctx.fillStyle = '#fff';
       ctx.fillText(cols[i][0], cx, y);
-      ctx.font = '400 8px monospace';
-      ctx.fillStyle = 'rgba(255,255,255,0.4)';
+      ctx.font = '400 11px monospace';
+      ctx.fillStyle = 'rgba(255,255,255,0.55)';
       ctx.fillText(cols[i][1], cx, y + 14);
     }
     ctx.textAlign = 'left';
@@ -275,14 +275,14 @@ const versus = {
     ctx.fillRect(0, h * 0.35, w, h * 0.65);
 
     const pad = 20;
-    const barY = h - 150;
+    const barY = h - 120;
 
     // Title
-    ctx.font = '700 10px monospace';
-    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.font = '700 11px monospace';
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
     ctx.fillText('BURNSHOT', pad, barY - 60);
     ctx.textAlign = 'right';
-    ctx.font = '400 10px monospace';
+    ctx.font = '400 11px monospace';
     ctx.fillText(`${formatDate(data.date)} · ${formatTime(data.ts, data.tz)}`, w - pad, barY - 60);
     ctx.textAlign = 'left';
 
@@ -293,7 +293,7 @@ const versus = {
 
     // Cost + period (line 2)
     ctx.font = '400 11px monospace';
-    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
     ctx.fillText(`$${data.cost.toFixed(2)} · ${data.period.from}–${data.period.to}`, pad, barY - 16);
 
     // Percent bar
@@ -337,32 +337,32 @@ const versus = {
 
     // Claude side (left)
     ctx.fillStyle = claudeColor;
-    ctx.font = '700 9px monospace';
+    ctx.font = '700 11px monospace';
     ctx.fillText('CLAUDE', pad, detailY);
     ctx.fillStyle = '#fff';
     ctx.font = '700 20px system-ui';
     ctx.fillText(formatTokens(claudeTokens), pad, detailY + 22);
-    ctx.font = '400 10px monospace';
-    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.font = '400 11px monospace';
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
     ctx.fillText(`${data.sessions.claude} sessions`, pad, detailY + 38);
 
     // Codex side (right)
     ctx.textAlign = 'right';
     ctx.fillStyle = codexColor;
-    ctx.font = '700 9px monospace';
+    ctx.font = '700 11px monospace';
     ctx.fillText('CODEX', w - pad, detailY);
     ctx.fillStyle = '#fff';
     ctx.font = '700 20px system-ui';
     ctx.fillText(formatTokens(codexTokens), w - pad, detailY + 22);
-    ctx.font = '400 10px monospace';
-    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.font = '400 11px monospace';
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
     ctx.fillText(`${data.sessions.codex} sessions`, w - pad, detailY + 38);
     ctx.textAlign = 'left';
 
     // VS divider
     ctx.textAlign = 'center';
     ctx.font = '800 14px system-ui';
-    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
     ctx.fillText('VS', w / 2, detailY + 22);
     ctx.textAlign = 'left';
   }
