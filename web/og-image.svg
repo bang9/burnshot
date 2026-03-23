@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#111111"/>
+      <stop offset="100%" stop-color="#0a0a0a"/>
+    </linearGradient>
+    <linearGradient id="vf-border" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#333"/>
+      <stop offset="100%" stop-color="#1a1a1a"/>
+    </linearGradient>
+    <linearGradient id="vf-inner" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1a1a1a"/>
+      <stop offset="60%" stop-color="#0f0f0f"/>
+      <stop offset="100%" stop-color="#080808"/>
+    </linearGradient>
+    <linearGradient id="bar-claude" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#d97757"/>
+      <stop offset="100%" stop-color="#e08a6a"/>
+    </linearGradient>
+    <linearGradient id="bar-codex" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#10a37f"/>
+      <stop offset="100%" stop-color="#15b88e"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Total content shifted right: left margin ~160 -->
+
+  <!-- Viewfinder frame -->
+  <rect x="160" y="135" width="360" height="360" rx="14" fill="url(#vf-border)"/>
+  <rect x="164" y="139" width="352" height="352" rx="11" fill="url(#vf-inner)"/>
+
+  <!-- Corner brackets -->
+  <g stroke="#fff" stroke-width="2.5" fill="none" opacity="0.4">
+    <path d="M188 170 L188 158 L200 158"/>
+    <path d="M492 170 L492 158 L480 158"/>
+    <path d="M188 460 L188 472 L200 472"/>
+    <path d="M492 460 L492 472 L480 472"/>
+  </g>
+
+  <!-- Overlay stats inside viewfinder (centered at x=300) -->
+  <g opacity="0.6">
+    <rect x="164" y="340" width="352" height="151" rx="0" fill="#000" opacity="0.5"/>
+
+    <text x="190" y="382" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="800" fill="#fff">1.2M tokens</text>
+
+    <rect x="190" y="395" width="195" height="12" rx="6" fill="url(#bar-claude)"/>
+    <rect x="385" y="395" width="105" height="12" rx="6" fill="url(#bar-codex)"/>
+
+    <text x="190" y="430" font-family="monospace" font-size="11" font-weight="700" fill="#d97757">CLAUDE</text>
+    <text x="190" y="446" font-family="system-ui" font-size="14" font-weight="700" fill="#fff" opacity="0.8">872K</text>
+    <text x="340" y="444" font-family="system-ui" font-size="12" font-weight="800" fill="#fff" opacity="0.3" text-anchor="middle">VS</text>
+    <text x="490" y="430" font-family="monospace" font-size="11" font-weight="700" fill="#10a37f" text-anchor="end">CODEX</text>
+    <text x="490" y="446" font-family="system-ui" font-size="14" font-weight="700" fill="#fff" opacity="0.8" text-anchor="end">328K</text>
+  </g>
+
+  <!-- Crosshair center -->
+  <circle cx="340" cy="290" r="3" fill="#fff" opacity="0.7"/>
+  <line x1="326" y1="290" x2="354" y2="290" stroke="#fff" stroke-width="1" opacity="0.7"/>
+  <line x1="340" y1="276" x2="340" y2="304" stroke="#fff" stroke-width="1" opacity="0.7"/>
+
+  <!-- Right side text (left-aligned at x=550) -->
+  <g transform="translate(590, 180) scale(0.6)">
+    <path d="M48 0C48 0 40 16 40 28C40 36 44 42 48 46C36 42 24 32 24 16C24 16 12 28 12 48C12 68 28 84 48 84C68 84 84 68 84 48C84 28 48 0 48 0Z" fill="#ff6b35"/>
+    <path d="M48 84C38 84 30 76 30 66C30 56 40 46 40 46C40 46 42 56 48 62C54 56 56 46 56 46C56 46 66 56 66 66C66 76 58 84 48 84Z" fill="#ffad35"/>
+  </g>
+  <text x="650" y="235" font-family="system-ui, -apple-system, sans-serif" font-size="80" font-weight="900" fill="#fff" letter-spacing="2">Burnshot</text>
+  <text x="590" y="290" font-family="system-ui, -apple-system, sans-serif" font-size="28" font-weight="600" fill="#ff6b35">Proof-of-burn for AI coding sessions</text>
+  <text x="590" y="355" font-family="system-ui, -apple-system, sans-serif" font-size="22" fill="#888">Snap your token stats like Nike Run Club</text>
+  <text x="590" y="385" font-family="system-ui, -apple-system, sans-serif" font-size="22" fill="#888">snaps your miles.</text>
+  <text x="590" y="465" font-family="monospace" font-size="18" fill="#555">github.com/bang9/burnshot</text>
+</svg>
