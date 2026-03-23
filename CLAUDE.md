@@ -23,3 +23,16 @@ Proof-of-burn photo tool for AI coding sessions. CLI (Go) collects token stats, 
 - Error messages should be user-friendly
 - Tests use table-driven patterns
 - No CGO dependencies (pure Go SQLite for cross-compilation)
+
+## Overlay Template Design Rules
+
+Text is rendered on top of photos — legibility is always the top priority.
+
+### Minimum Standards
+- **Font size:** minimum 11px. Never use 10px or below
+- **Text opacity:** secondary text must be at least `0.55`. Anything below is unreadable on photos
+- **Gradient overlay:** text areas must have a sufficiently dark background treatment
+
+### Layout
+- Overlay content should sit flush to the edges. Maximize the photo area
+- Avoid layouts where content feels like it's floating in the center of the screen
