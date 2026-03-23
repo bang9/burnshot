@@ -4,6 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/exec"
+	"runtime"
 	"strings"
 	"time"
 
@@ -19,6 +21,7 @@ var version = "dev"
 func main() {
 	yesterday := flag.Bool("yesterday", false, "Show yesterday's burn day")
 	dateStr := flag.String("date", "", "Show a specific date (YYYY-MM-DD)")
+	noOpen := flag.Bool("no-open", false, "Don't open QR in browser (show in terminal)")
 	showVersion := flag.Bool("version", false, "Print version")
 	flag.Parse()
 
@@ -100,9 +103,10 @@ func main() {
 
 	// Build summary
 	s := summary.Build(allSessions, p, window, now)
-	url := s.FullURL()
+	snapURL := s.FullURL()
+	qrURL := strings.Replace(snapURL, "/snap/#", "/qr/#", 1)
 
-	// Display
+	// Display stats
 	from, to := window.FormatPeriod()
 	fmt.Println()
 	fmt.Println(" 🔥 BURNSHOT")
@@ -115,11 +119,33 @@ func main() {
 	fmt.Println(" " + strings.Repeat("─", 30))
 	fmt.Println()
 
-	qr.Render(os.Stdout, url)
+	if *noOpen {
+		// Terminal QR fallback
+		qr.Render(os.Stdout, snapURL)
+		fmt.Println()
+		fmt.Println(" Scan to snap your burnshot")
+		fmt.Printf(" %s\n\n", snapURL)
+	} else {
+		// Open QR page in browser (default)
+		fmt.Println(" Opening QR in browser...")
+		fmt.Printf(" %s\n\n", qrURL)
+		openBrowser(qrURL)
+	}
+}
 
-	fmt.Println()
-	fmt.Println(" Scan to snap your burnshot")
-	fmt.Printf(" %s\n\n", url)
+func openBrowser(url string) {
+	var cmd *exec.Cmd
+	switch runtime.GOOS {
+	case "darwin":
+		cmd = exec.Command("open", url)
+	case "linux":
+		cmd = exec.Command("xdg-open", url)
+	case "windows":
+		cmd = exec.Command("cmd", "/c", "start", url)
+	default:
+		return
+	}
+	cmd.Start()
 }
 
 func formatNumber(n int64) string {

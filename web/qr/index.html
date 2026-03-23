@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Burnshot — Scan QR</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .qr-page {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100dvh;
+      gap: 2rem;
+      padding: 2rem;
+      text-align: center;
+    }
+    .qr-canvas {
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px;
+    }
+    .stats-preview {
+      display: flex;
+      gap: 2rem;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+    }
+    .stats-preview .val {
+      color: var(--fg);
+      font-size: 1.4rem;
+      font-weight: 700;
+      font-family: var(--font-sans);
+    }
+    .hint {
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="qr-page" id="app">
+    <h1>🔥 Burnshot</h1>
+    <canvas id="qr" class="qr-canvas"></canvas>
+    <div class="stats-preview" id="stats"></div>
+    <p class="hint">Scan with your phone to snap a proof shot</p>
+  </div>
+
+  <div class="error-screen" id="error" style="display:none">
+    <h2>Oops</h2>
+    <p id="error-msg"></p>
+  </div>
+
+  <script type="module" src="../js/firebase.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+  <script type="module">
+    import { parseData } from '../js/data.js';
+
+    const data = parseData();
+    if (!data || data.error) {
+      document.getElementById('app').style.display = 'none';
+      document.getElementById('error').style.display = 'flex';
+      document.getElementById('error-msg').textContent =
+        data?.error === 'version_mismatch'
+          ? 'Update your browser page — this burnshot was created with a newer version.'
+          : 'Invalid burnshot data. Generate a new QR from your terminal.';
+    } else {
+      // Build snap URL with same hash
+      const snapUrl = window.location.href.replace('/qr/', '/snap/');
+
+      // Render QR
+      const canvas = document.getElementById('qr');
+      QRCode.toCanvas(canvas, snapUrl, {
+        width: 280,
+        margin: 0,
+        color: { dark: '#000', light: '#fff' },
+        errorCorrectionLevel: 'L',
+      });
+
+      // Show stats preview
+      const stats = document.getElementById('stats');
+      stats.innerHTML = `
+        <div><div class="val">${data.tokens.total.toLocaleString()}</div>tokens</div>
+        <div><div class="val">$${data.cost.toFixed(2)}</div>cost</div>
+        <div><div class="val">${data.sessions.total}</div>sessions</div>
+      `;
+    }
+  </script>
+</body>
+</html>
