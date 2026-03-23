@@ -10,6 +10,7 @@ export function parseData() {
     const data = JSON.parse(json);
 
     if (!data.v || !data.tokens) return null;
+    if (data.v > 1) return { error: 'version_mismatch' };
     return data;
   } catch {
     return null;

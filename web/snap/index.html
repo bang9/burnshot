@@ -42,6 +42,12 @@
       errEl.style.display = 'flex';
       document.getElementById('error-msg').textContent =
         'Invalid burnshot data. Generate a new QR from your terminal.';
+    } else if (data.error === 'version_mismatch') {
+      document.getElementById('app').style.display = 'none';
+      const errEl = document.getElementById('error');
+      errEl.style.display = 'flex';
+      document.getElementById('error-msg').textContent =
+        'Update your browser page \u2014 this burnshot was created with a newer version.';
     } else {
       try {
         await initCamera(document.getElementById('video'));
@@ -58,8 +64,15 @@
         document.getElementById('app').style.display = 'none';
         const errEl = document.getElementById('error');
         errEl.style.display = 'flex';
-        document.getElementById('error-msg').textContent =
-          'Camera access denied. Please allow camera access and refresh.';
+        document.getElementById('error-msg').innerHTML =
+          '<strong>Camera access denied.</strong><br>' +
+          '<button onclick="location.reload()" style="margin-top:12px;padding:8px 20px;font-size:14px;cursor:pointer;">Retry</button>' +
+          '<div style="margin-top:16px;font-size:13px;opacity:0.7;text-align:left">' +
+          '<strong>Stats (no camera):</strong><br>' +
+          'Tokens: ' + (data.tokens ? data.tokens.total.toLocaleString() : '—') + '<br>' +
+          'Cost: $' + (data.cost != null ? data.cost.toFixed(2) : '—') + '<br>' +
+          'Sessions: ' + (data.sessions ? data.sessions.total : '—') +
+          '</div>';
       }
     }
   </script>

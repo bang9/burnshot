@@ -68,19 +68,33 @@ func main() {
 
 	// Collect from all sources
 	var allSessions []collector.Session
+	anyPathExists := false
 
-	claudeCollector := &collector.ClaudeCollector{DataDir: collector.DefaultClaudeDataDir()}
+	claudeDataDir := collector.DefaultClaudeDataDir()
+	if _, err := os.Stat(claudeDataDir); err == nil {
+		anyPathExists = true
+	}
+	claudeCollector := &collector.ClaudeCollector{DataDir: claudeDataDir}
 	if sessions, err := claudeCollector.Collect(window); err == nil {
 		allSessions = append(allSessions, sessions...)
 	}
 
-	codexCollector := &collector.CodexCollector{DataDir: collector.DefaultCodexDataDir()}
+	codexDataDir := collector.DefaultCodexDataDir()
+	codexDBPath := codexDataDir + "/state_5.sqlite"
+	if _, err := os.Stat(codexDBPath); err == nil {
+		anyPathExists = true
+	}
+	codexCollector := &collector.CodexCollector{DataDir: codexDataDir}
 	if sessions, err := codexCollector.Collect(window); err == nil {
 		allSessions = append(allSessions, sessions...)
 	}
 
 	if len(allSessions) == 0 {
-		fmt.Println("No sessions found for this burn day. Go burn some tokens first!")
+		if !anyPathExists {
+			fmt.Println("No AI CLI data found. Install Claude Code or Codex CLI to start tracking.")
+		} else {
+			fmt.Println("No sessions found for this burn day.")
+		}
 		os.Exit(0)
 	}
 

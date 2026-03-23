@@ -1,3 +1,16 @@
+// Polyfill for roundRect (Safari < 16)
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, radii) {
+    const r = typeof radii === 'number' ? radii : (Array.isArray(radii) ? radii[0] : 0);
+    this.moveTo(x + r, y);
+    this.arcTo(x + w, y, x + w, y + h, r);
+    this.arcTo(x + w, y + h, x, y + h, r);
+    this.arcTo(x, y + h, x, y, r);
+    this.arcTo(x, y, x + w, y, r);
+    this.closePath();
+  };
+}
+
 function formatTokens(n) {
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
   if (n >= 1_000) return (n / 1_000).toFixed(0) + 'K';
@@ -225,7 +238,7 @@ const glass = {
     const cols = [
       [`$${data.cost.toFixed(2)}`, 'COST'],
       [`${data.sessions.total}`, 'SESSIONS'],
-      [`CC · CX`, 'TOOLS'],
+      [`CC ${data.sessions.claude} · CX ${data.sessions.codex}`, 'TOOLS'],
     ];
     for (let i = 0; i < cols.length; i++) {
       const cx = cardX + 20 + colW * i + colW / 2;

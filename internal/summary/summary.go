@@ -3,6 +3,7 @@ package summary
 import (
 	"encoding/base64"
 	"encoding/json"
+	"math"
 	"time"
 
 	"github.com/bang9/burnshot/internal/burnday"
@@ -10,7 +11,7 @@ import (
 	"github.com/bang9/burnshot/internal/pricing"
 )
 
-const BaseURL = "https://bang9.github.io/burnshot/"
+const BaseURL = "https://bang9.github.io/burnshot/snap/"
 
 type TokenInfo struct {
 	Input    int64            `json:"input"`
@@ -78,7 +79,7 @@ func Build(sessions []collector.Session, p *pricing.PricingData, window burnday.
 	}
 
 	// Round to 2 decimal places
-	payload.Cost = float64(int64(totalCost*100)) / 100
+	payload.Cost = math.Round(totalCost*100) / 100
 
 	return payload
 }

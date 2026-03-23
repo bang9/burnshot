@@ -72,7 +72,7 @@ func TestFullURL(t *testing.T) {
 		t.Fatal("FullURL() returned empty string")
 	}
 	// Should start with the base URL
-	prefix := "https://bang9.github.io/burnshot/#data="
+	prefix := "https://bang9.github.io/burnshot/snap/#data="
 	if len(url) < len(prefix) || url[:len(prefix)] != prefix {
 		t.Errorf("URL doesn't start with expected prefix: %s", url)
 	}
