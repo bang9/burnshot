@@ -289,10 +289,12 @@ const versus = {
     // Total
     ctx.font = '800 28px system-ui';
     ctx.fillStyle = '#fff';
-    ctx.fillText(formatTokens(total), pad, barY - 30);
+    const totalText = formatTokens(total);
+    const totalTextWidth = ctx.measureText(totalText).width;
+    ctx.fillText(totalText, pad, barY - 30);
     ctx.font = '400 10px monospace';
     ctx.fillStyle = 'rgba(255,255,255,0.4)';
-    ctx.fillText(`tokens · $${data.cost.toFixed(2)}`, pad + ctx.measureText(formatTokens(total)).width + 8, barY - 30);
+    ctx.fillText(`tokens · $${data.cost.toFixed(2)}`, pad + totalTextWidth + 8, barY - 30);
 
     // Percent bar
     const barW = w - pad * 2;
