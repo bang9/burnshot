@@ -1,80 +1,144 @@
 package collector
 
 import (
+	"bufio"
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/bang9/burnshot/internal/burnday"
 )
 
-type claudeSession struct {
-	SessionID      string `json:"session_id"`
-	InputTokens    int64  `json:"input_tokens"`
-	OutputTokens   int64  `json:"output_tokens"`
-	StartTime      string `json:"start_time"`
-	DurationMinutes int   `json:"duration_minutes"`
+// jsonlMessage represents a single line in a Claude Code JSONL session file.
+type jsonlMessage struct {
+	Timestamp string `json:"timestamp"`
+	SessionID string `json:"sessionId"`
+	Message   *struct {
+		Usage *struct {
+			InputTokens              int64 `json:"input_tokens"`
+			OutputTokens             int64 `json:"output_tokens"`
+			CacheReadInputTokens     int64 `json:"cache_read_input_tokens"`
+			CacheCreationInputTokens int64 `json:"cache_creation_input_tokens"`
+		} `json:"usage"`
+	} `json:"message"`
 }
 
 type ClaudeCollector struct {
-	DataDir string // path to session-meta directory
+	DataDir string // path to ~/.claude/projects
 }
 
-// DefaultClaudeDataDir returns ~/.claude/usage-data/session-meta
+// DefaultClaudeDataDir returns ~/.claude/projects
 func DefaultClaudeDataDir() string {
 	home, _ := os.UserHomeDir()
-	return filepath.Join(home, ".claude", "usage-data", "session-meta")
+	return filepath.Join(home, ".claude", "projects")
 }
 
 func (c *ClaudeCollector) Collect(window burnday.Window) ([]Session, error) {
-	entries, err := os.ReadDir(c.DataDir)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil, nil
-		}
-		return nil, err
+	if _, err := os.Stat(c.DataDir); os.IsNotExist(err) {
+		return nil, nil
 	}
 
-	var sessions []Session
-	for _, entry := range entries {
-		if entry.IsDir() || filepath.Ext(entry.Name()) != ".json" {
-			continue
+	// Find all .jsonl files (including subagents) modified within a reasonable range
+	var jsonlFiles []string
+	filepath.Walk(c.DataDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return nil
 		}
+		if !info.IsDir() && strings.HasSuffix(path, ".jsonl") {
+			// Quick filter: skip files not modified on or after window start date
+			windowDay := window.Start.AddDate(0, 0, -1)
+			if info.ModTime().Before(windowDay) {
+				return nil
+			}
+			jsonlFiles = append(jsonlFiles, path)
+		}
+		return nil
+	})
 
-		data, err := os.ReadFile(filepath.Join(c.DataDir, entry.Name()))
+	// Aggregate per session
+	type sessionAgg struct {
+		sessionID    string
+		startTime    time.Time
+		inputTokens  int64
+		outputTokens int64
+		cacheRead    int64
+		cacheCreate  int64
+	}
+	sessions := make(map[string]*sessionAgg)
+
+	for _, path := range jsonlFiles {
+		f, err := os.Open(path)
 		if err != nil {
 			continue
 		}
 
-		var cs claudeSession
-		if err := json.Unmarshal(data, &cs); err != nil {
-			continue
-		}
-
-		t, err := time.Parse(time.RFC3339, cs.StartTime)
-		if err != nil {
-			// Try ISO8601 without timezone
-			t, err = time.Parse("2006-01-02T15:04:05", cs.StartTime)
-			if err != nil {
+		scanner := bufio.NewScanner(f)
+		scanner.Buffer(make([]byte, 1024*1024), 1024*1024) // 1MB line buffer
+		for scanner.Scan() {
+			var msg jsonlMessage
+			if err := json.Unmarshal(scanner.Bytes(), &msg); err != nil {
 				continue
 			}
-		}
-		// Convert to local timezone
-		t = t.In(time.Local)
 
-		if !window.Contains(t) {
-			continue
-		}
+			// Only process lines with usage data
+			if msg.Message == nil || msg.Message.Usage == nil {
+				continue
+			}
+			usage := msg.Message.Usage
+			if usage.InputTokens == 0 && usage.OutputTokens == 0 && usage.CacheReadInputTokens == 0 && usage.CacheCreationInputTokens == 0 {
+				continue
+			}
 
-		sessions = append(sessions, Session{
+			// Parse timestamp
+			t, err := time.Parse(time.RFC3339Nano, msg.Timestamp)
+			if err != nil {
+				t, err = time.Parse(time.RFC3339, msg.Timestamp)
+				if err != nil {
+					continue
+				}
+			}
+			t = t.In(time.Local)
+
+			if !window.Contains(t) {
+				continue
+			}
+
+			sid := msg.SessionID
+			if sid == "" {
+				// Use filename as fallback session ID
+				sid = filepath.Base(path)
+			}
+
+			agg, ok := sessions[sid]
+			if !ok {
+				agg = &sessionAgg{sessionID: sid, startTime: t}
+				sessions[sid] = agg
+			}
+			if t.Before(agg.startTime) {
+				agg.startTime = t
+			}
+
+			agg.inputTokens += usage.InputTokens
+			agg.outputTokens += usage.OutputTokens
+			agg.cacheRead += usage.CacheReadInputTokens
+			agg.cacheCreate += usage.CacheCreationInputTokens
+		}
+		f.Close()
+	}
+
+	var result []Session
+	for _, agg := range sessions {
+		total := agg.inputTokens + agg.outputTokens + agg.cacheRead + agg.cacheCreate
+		result = append(result, Session{
 			Source:       "claude",
-			StartTime:    t,
-			InputTokens:  cs.InputTokens,
-			OutputTokens: cs.OutputTokens,
-			TotalTokens:  cs.InputTokens + cs.OutputTokens,
+			StartTime:    agg.startTime,
+			InputTokens:  agg.inputTokens + agg.cacheRead + agg.cacheCreate,
+			OutputTokens: agg.outputTokens,
+			TotalTokens:  total,
 		})
 	}
 
-	return sessions, nil
+	return result, nil
 }
