@@ -50,10 +50,6 @@ export async function setZoom(level) {
   videoElement.style.transform = swLevel === 1 ? '' : `scale(${swLevel})`;
 }
 
-export function hasHardwareZoom() {
-  return hwZoomRange !== null;
-}
-
 export function getCropFactor() {
   if (usingHardwareZoom) return 1;
   return Math.max(currentZoom, 1);
