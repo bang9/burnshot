@@ -71,7 +71,7 @@ const minimal = {
 
     ctx.font = '500 11px monospace';
     ctx.fillStyle = 'rgba(255,255,255,0.55)';
-    ctx.fillText('BURNSHOT', 20, y);
+    ctx.fillText('BURNSHOT', 20, y + 6);
   }
 };
 
