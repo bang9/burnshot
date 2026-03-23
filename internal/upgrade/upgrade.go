@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	repo         = "bang9/burnshot"
-	checkCooldown = 24 * time.Hour
+	repo          = "bang9/burnshot"
+	checkCooldown = 1 * time.Hour
 )
 
 type release struct {
@@ -22,30 +22,32 @@ type release struct {
 }
 
 // CheckAndUpgrade checks for a newer version and self-upgrades if found.
-// Skips if checked within the last 24 hours. Non-fatal on any error.
+// Skips if checked within the last hour. Non-fatal on any error.
 func CheckAndUpgrade(currentVersion string) {
 	if currentVersion == "dev" {
 		return
 	}
 
-	cacheDir := cacheDir()
-	if cacheDir == "" {
-		return
-	}
-	checkFile := filepath.Join(cacheDir, "last-check")
-
 	// Cooldown: skip if checked recently
-	if info, err := os.Stat(checkFile); err == nil {
-		if time.Since(info.ModTime()) < checkCooldown {
-			return
+	home, _ := os.UserHomeDir()
+	if home != "" {
+		checkFile := filepath.Join(home, ".burnshot", "last-check")
+		if info, err := os.Stat(checkFile); err == nil {
+			if time.Since(info.ModTime()) < checkCooldown {
+				return
+			}
 		}
 	}
 
-	// Touch check file (even if upgrade fails, don't spam)
-	os.MkdirAll(cacheDir, 0755)
-	os.WriteFile(checkFile, []byte(time.Now().Format(time.RFC3339)), 0644)
-
 	latest, err := latestVersion()
+
+	// Touch check file after API call (even on same version / error)
+	if home != "" {
+		dir := filepath.Join(home, ".burnshot")
+		os.MkdirAll(dir, 0755)
+		os.WriteFile(filepath.Join(dir, "last-check"), nil, 0644)
+	}
+
 	if err != nil || latest == "" || latest == currentVersion {
 		return
 	}
@@ -131,10 +133,3 @@ func downloadAndReplace(version string) error {
 	return nil
 }
 
-func cacheDir() string {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return ""
-	}
-	return filepath.Join(home, ".burnshot")
-}
