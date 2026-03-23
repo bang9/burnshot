@@ -1,59 +1,41 @@
 package collector
 
 import (
-	"database/sql"
+	"encoding/json"
+	"os"
 	"path/filepath"
 	"testing"
 	"time"
 
 	"github.com/bang9/burnshot/internal/burnday"
-	_ "modernc.org/sqlite"
 )
 
-func setupTestDB(t *testing.T) string {
-	t.Helper()
+func TestCodexCollector_CollectsSessionsFromJSONL(t *testing.T) {
+	oldLocal := time.Local
+	time.Local = time.UTC
+	defer func() { time.Local = oldLocal }()
+
 	dir := t.TempDir()
-	dbPath := filepath.Join(dir, "state_5.sqlite")
 
-	db, err := sql.Open("sqlite", dbPath)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer db.Close()
+	writeSessionFixture(t, dir, "sessions/2026/03/23/session-in-window.jsonl", []string{
+		`{"timestamp":"2026-03-23T10:00:00Z","type":"session_meta","payload":{"id":"s1","timestamp":"2026-03-23T10:00:00Z"}}`,
+		`{"timestamp":"2026-03-23T10:00:01Z","type":"turn_context","payload":{"model":"gpt-5.4"}}`,
+		`{"timestamp":"2026-03-23T10:00:02Z","type":"event_msg","payload":{"type":"token_count","info":null}}`,
+		`{"timestamp":"2026-03-23T10:00:03Z","type":"event_msg","payload":{"type":"token_count","info":{"total_token_usage":{"input_tokens":100,"cached_input_tokens":20,"output_tokens":10}}}}`,
+		`{"timestamp":"2026-03-23T10:05:00Z","type":"event_msg","payload":{"type":"token_count","info":{"total_token_usage":{"input_tokens":150,"cached_input_tokens":30,"output_tokens":25}}}}`,
+	})
 
-	_, err = db.Exec(`CREATE TABLE threads (
-		id TEXT PRIMARY KEY,
-		tokens_used INTEGER,
-		model TEXT,
-		model_provider TEXT,
-		created_at INTEGER,
-		title TEXT
-	)`)
-	if err != nil {
-		t.Fatal(err)
-	}
+	writeSessionFixture(t, dir, "sessions/2026/03/22/session-started-before-window.jsonl", []string{
+		`{"timestamp":"2026-03-22T04:00:00Z","type":"session_meta","payload":{"id":"s2","timestamp":"2026-03-22T04:00:00Z"}}`,
+		`{"timestamp":"2026-03-22T04:00:01Z","type":"turn_context","payload":{"model":"gpt-5.4-mini"}}`,
+		`{"timestamp":"2026-03-23T11:00:00Z","type":"event_msg","payload":{"type":"token_count","info":{"last_token_usage":{"input_tokens":40,"cached_input_tokens":5,"output_tokens":7}}}}`,
+	})
 
-	// Session in window (2026-03-23 10:00 UTC)
-	ts1 := time.Date(2026, 3, 23, 10, 0, 0, 0, time.UTC).Unix()
-	// Session outside window (2026-03-22 02:00 UTC)
-	ts2 := time.Date(2026, 3, 22, 2, 0, 0, 0, time.UTC).Unix()
-	// Session in window with model
-	ts3 := time.Date(2026, 3, 23, 12, 0, 0, 0, time.UTC).Unix()
+	writeSessionFixture(t, dir, "sessions/2026/03/23/legacy-session.jsonl", []string{
+		`{"id":"legacy-1","timestamp":"2026-03-23T12:00:00Z","instructions":null}`,
+		`{"record_type":"state"}`,
+	})
 
-	_, err = db.Exec(`INSERT INTO threads (id, tokens_used, model, model_provider, created_at, title) VALUES
-		('s1', 500000, NULL, 'openai', ?, 'test session 1'),
-		('s2', 200000, NULL, 'openai', ?, 'test session 2'),
-		('s3', 300000, 'o4-mini', 'openai', ?, 'test session 3')
-	`, ts1, ts2, ts3)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	return dir
-}
-
-func TestCodexCollector_Collect(t *testing.T) {
-	dir := setupTestDB(t)
 	c := &CodexCollector{DataDir: dir}
 
 	now := time.Date(2026, 3, 23, 14, 32, 0, 0, time.UTC)
@@ -63,52 +45,142 @@ func TestCodexCollector_Collect(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Collect() error: %v", err)
 	}
-
-	if len(sessions) != 2 {
-		t.Fatalf("Expected 2 sessions in window, got %d", len(sessions))
+	if len(sessions) != 3 {
+		t.Fatalf("Expected 3 sessions, got %d", len(sessions))
 	}
 
-	for _, s := range sessions {
-		if s.Source != "codex" {
-			t.Errorf("Source = %q, want \"codex\"", s.Source)
-		}
-		if s.TotalTokens == 0 {
-			t.Error("TotalTokens should not be 0")
-		}
+	inWindow, ok := findSession(sessions, time.Date(2026, 3, 23, 10, 0, 0, 0, time.Local), "gpt-5.4")
+	if !ok {
+		t.Fatal("expected session started in window")
+	}
+	if inWindow.SkipSessionCount {
+		t.Fatal("session started in window should count toward session total")
+	}
+	if inWindow.InputTokens != 120 || inWindow.CacheReadInputTokens != 30 || inWindow.OutputTokens != 25 || inWindow.TotalTokens != 175 {
+		t.Fatalf("unexpected in-window token totals: %+v", inWindow)
+	}
+
+	carryOver, ok := findSession(sessions, time.Date(2026, 3, 22, 4, 0, 0, 0, time.Local), "gpt-5.4-mini")
+	if !ok {
+		t.Fatal("expected carry-over session")
+	}
+	if !carryOver.SkipSessionCount {
+		t.Fatal("session started before window should not count toward session total")
+	}
+	if carryOver.InputTokens != 35 || carryOver.CacheReadInputTokens != 5 || carryOver.OutputTokens != 7 || carryOver.TotalTokens != 47 {
+		t.Fatalf("unexpected carry-over token totals: %+v", carryOver)
+	}
+
+	legacy, ok := findSession(sessions, time.Date(2026, 3, 23, 12, 0, 0, 0, time.Local), "")
+	if !ok {
+		t.Fatal("expected legacy session")
+	}
+	if legacy.SkipSessionCount {
+		t.Fatal("legacy session started in window should count toward session total")
+	}
+	if legacy.TotalTokens != 0 {
+		t.Fatalf("legacy session should not contribute tokens: %+v", legacy)
 	}
 }
 
-func TestCodexCollector_ModelParsing(t *testing.T) {
-	dir := setupTestDB(t)
-	c := &CodexCollector{DataDir: dir}
+func TestCodexCollector_MissingSessionsDir(t *testing.T) {
+	oldLocal := time.Local
+	time.Local = time.UTC
+	defer func() { time.Local = oldLocal }()
 
-	now := time.Date(2026, 3, 23, 14, 32, 0, 0, time.UTC)
-	window := burnday.CurrentWindow(now)
-
-	sessions, _ := c.Collect(window)
-
-	var foundModel bool
-	for _, s := range sessions {
-		if s.Model == "o4-mini" {
-			foundModel = true
-		}
-	}
-	if !foundModel {
-		t.Error("Expected to find session with model 'o4-mini'")
-	}
-}
-
-func TestCodexCollector_MissingDB(t *testing.T) {
 	c := &CodexCollector{DataDir: "/nonexistent/path"}
 	window := burnday.Window{
 		Start: time.Now().Add(-24 * time.Hour),
 		End:   time.Now(),
 	}
+
 	sessions, err := c.Collect(window)
 	if err != nil {
-		t.Fatalf("Should not error on missing DB: %v", err)
+		t.Fatalf("Should not error on missing sessions dir: %v", err)
 	}
 	if len(sessions) != 0 {
 		t.Errorf("Expected 0 sessions, got %d", len(sessions))
 	}
+}
+
+func TestCodexCollector_ReadsArchivedSessions(t *testing.T) {
+	oldLocal := time.Local
+	time.Local = time.UTC
+	defer func() { time.Local = oldLocal }()
+
+	dir := t.TempDir()
+	writeSessionFixture(t, dir, "archived_sessions/2026/03/23/archived.jsonl", []string{
+		`{"timestamp":"2026-03-23T09:00:00Z","type":"session_meta","payload":{"id":"archived-1","timestamp":"2026-03-23T09:00:00Z"}}`,
+	})
+
+	c := &CodexCollector{DataDir: dir}
+	window := burnday.CurrentWindow(time.Date(2026, 3, 23, 14, 32, 0, 0, time.UTC))
+
+	sessions, err := c.Collect(window)
+	if err != nil {
+		t.Fatalf("Collect() error: %v", err)
+	}
+	if len(sessions) != 1 {
+		t.Fatalf("Expected 1 session, got %d", len(sessions))
+	}
+	if sessions[0].SkipSessionCount {
+		t.Fatal("archived session started in window should count toward session total")
+	}
+}
+
+func writeSessionFixture(t *testing.T, root, relativePath string, lines []string) {
+	t.Helper()
+
+	path := filepath.Join(root, relativePath)
+	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+		t.Fatalf("MkdirAll: %v", err)
+	}
+
+	content := ""
+	for _, line := range lines {
+		content += line + "\n"
+	}
+	if err := os.WriteFile(path, []byte(content), 0644); err != nil {
+		t.Fatalf("WriteFile: %v", err)
+	}
+
+	modTime := time.Now()
+	if len(lines) > 0 {
+		if ts, ok := fixtureTimestamp(lines[len(lines)-1]); ok {
+			modTime = ts
+		}
+	}
+	if err := os.Chtimes(path, modTime, modTime); err != nil {
+		t.Fatalf("Chtimes: %v", err)
+	}
+}
+
+func fixtureTimestamp(line string) (time.Time, bool) {
+	type timestampOnly struct {
+		Timestamp string `json:"timestamp"`
+	}
+	var entry timestampOnly
+	if err := json.Unmarshal([]byte(line), &entry); err != nil {
+		return time.Time{}, false
+	}
+	if entry.Timestamp == "" {
+		return time.Time{}, false
+	}
+	ts, err := time.Parse(time.RFC3339Nano, entry.Timestamp)
+	if err != nil {
+		ts, err = time.Parse(time.RFC3339, entry.Timestamp)
+		if err != nil {
+			return time.Time{}, false
+		}
+	}
+	return ts, true
+}
+
+func findSession(sessions []Session, start time.Time, model string) (Session, bool) {
+	for _, session := range sessions {
+		if session.StartTime.Equal(start) && session.Model == model {
+			return session, true
+		}
+	}
+	return Session{}, false
 }

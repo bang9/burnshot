@@ -87,8 +87,12 @@ func main() {
 	}
 
 	codexDataDir := collector.DefaultCodexDataDir()
-	codexDBPath := codexDataDir + "/state_5.sqlite"
-	if _, err := os.Stat(codexDBPath); err == nil {
+	codexSessionsDir := codexDataDir + "/sessions"
+	codexArchivedSessionsDir := codexDataDir + "/archived_sessions"
+	if _, err := os.Stat(codexSessionsDir); err == nil {
+		anyPathExists = true
+	}
+	if _, err := os.Stat(codexArchivedSessionsDir); err == nil {
 		anyPathExists = true
 	}
 	codexCollector := &collector.CodexCollector{DataDir: codexDataDir}

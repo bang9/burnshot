@@ -65,13 +65,15 @@ func Build(sessions []collector.Session, p *pricing.PricingData, window burnday.
 
 		totalCost += p.CalculateCost(s.Source, s.Model, s.InputTokens, s.OutputTokens, s.CacheReadInputTokens, s.CacheCreationInputTokens)
 
-		switch s.Source {
-		case "claude":
-			payload.Sessions.Claude++
-		case "codex":
-			payload.Sessions.Codex++
+		if !s.SkipSessionCount {
+			switch s.Source {
+			case "claude":
+				payload.Sessions.Claude++
+			case "codex":
+				payload.Sessions.Codex++
+			}
+			payload.Sessions.Total++
 		}
-		payload.Sessions.Total++
 	}
 
 	// Round to 2 decimal places

@@ -36,7 +36,7 @@ Scan the QR code with your phone → snap a photo → share your burn.
 | CLI | Data Source | Token Detail |
 |-----|-----------|-------------|
 | Claude Code | `~/.claude/usage-data/session-meta/` | input + output |
-| Codex CLI | `~/.codex/state_5.sqlite` | total only |
+| Codex CLI | `~/.codex/sessions/` | input + output + cache read |
 
 ## Overlay Templates
 

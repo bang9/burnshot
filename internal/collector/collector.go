@@ -7,7 +7,7 @@ import (
 )
 
 type Session struct {
-	Source                   string    // "claude" or "codex"
+	Source                   string // "claude" or "codex"
 	StartTime                time.Time
 	InputTokens              int64
 	OutputTokens             int64
@@ -15,6 +15,7 @@ type Session struct {
 	CacheCreationInputTokens int64
 	TotalTokens              int64
 	Model                    string // may be empty
+	SkipSessionCount         bool
 }
 
 type Collector interface {

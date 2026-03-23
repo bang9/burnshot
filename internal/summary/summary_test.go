@@ -43,6 +43,29 @@ func TestBuild(t *testing.T) {
 	}
 }
 
+func TestBuild_SkipsNonCountableSessions(t *testing.T) {
+	sessions := []collector.Session{
+		{Source: "codex", InputTokens: 100, CacheReadInputTokens: 20, OutputTokens: 5, TotalTokens: 125},
+		{Source: "codex", InputTokens: 200, CacheReadInputTokens: 30, OutputTokens: 10, TotalTokens: 240, SkipSessionCount: true},
+	}
+
+	p, _ := pricing.LoadEmbedded()
+	now := time.Date(2026, 3, 23, 14, 32, 0, 0, time.Local)
+	window := burnday.CurrentWindow(now)
+
+	s := Build(sessions, p, window, now)
+
+	if s.Sessions.Total != 1 {
+		t.Errorf("Sessions.Total = %d, want 1", s.Sessions.Total)
+	}
+	if s.Sessions.Codex != 1 {
+		t.Errorf("Sessions.Codex = %d, want 1", s.Sessions.Codex)
+	}
+	if s.Tokens.Total != 365 {
+		t.Errorf("Tokens.Total = %d, want 365", s.Tokens.Total)
+	}
+}
+
 func TestEncode_Decode(t *testing.T) {
 	s := &Payload{
 		Version: 1,
