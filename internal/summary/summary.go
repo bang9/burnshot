@@ -63,7 +63,7 @@ func Build(sessions []collector.Session, p *pricing.PricingData, window burnday.
 		payload.Tokens.Total += s.TotalTokens
 		payload.Tokens.BySource[s.Source] += s.TotalTokens
 
-		totalCost += p.CalculateCost(s.Source, s.Model, s.InputTokens, s.OutputTokens)
+		totalCost += p.CalculateCost(s.Source, s.Model, s.InputTokens, s.OutputTokens, s.CacheReadInputTokens, s.CacheCreationInputTokens)
 
 		switch s.Source {
 		case "claude":

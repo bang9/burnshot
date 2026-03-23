@@ -7,12 +7,14 @@ import (
 )
 
 type Session struct {
-	Source       string    // "claude" or "codex"
-	StartTime   time.Time
-	InputTokens int64
-	OutputTokens int64
-	TotalTokens int64
-	Model       string // may be empty
+	Source                   string    // "claude" or "codex"
+	StartTime                time.Time
+	InputTokens              int64
+	OutputTokens             int64
+	CacheReadInputTokens     int64
+	CacheCreationInputTokens int64
+	TotalTokens              int64
+	Model                    string // may be empty
 }
 
 type Collector interface {

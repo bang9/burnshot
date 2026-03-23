@@ -132,11 +132,13 @@ func (c *ClaudeCollector) Collect(window burnday.Window) ([]Session, error) {
 	for _, agg := range sessions {
 		total := agg.inputTokens + agg.outputTokens + agg.cacheRead + agg.cacheCreate
 		result = append(result, Session{
-			Source:       "claude",
-			StartTime:    agg.startTime,
-			InputTokens:  agg.inputTokens + agg.cacheRead + agg.cacheCreate,
-			OutputTokens: agg.outputTokens,
-			TotalTokens:  total,
+			Source:                   "claude",
+			StartTime:                agg.startTime,
+			InputTokens:              agg.inputTokens,
+			OutputTokens:             agg.outputTokens,
+			CacheReadInputTokens:     agg.cacheRead,
+			CacheCreationInputTokens: agg.cacheCreate,
+			TotalTokens:              total,
 		})
 	}
 

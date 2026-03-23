@@ -100,7 +100,7 @@ func Update() error {
 // CalculateCost calculates the estimated cost for token usage.
 // source is "claude" or "codex". model may be empty (uses default).
 // For Codex, inputTokens is the total and outputTokens is 0.
-func (p *PricingData) CalculateCost(source, model string, inputTokens, outputTokens int64) float64 {
+func (p *PricingData) CalculateCost(source, model string, inputTokens, outputTokens, cacheReadTokens, cacheCreateTokens int64) float64 {
 	if model == "" || p.Models[model].InputPer1M == 0 {
 		switch source {
 		case "claude":
@@ -117,5 +117,7 @@ func (p *PricingData) CalculateCost(source, model string, inputTokens, outputTok
 
 	cost := float64(inputTokens) * m.InputPer1M / 1_000_000
 	cost += float64(outputTokens) * m.OutputPer1M / 1_000_000
+	cost += float64(cacheReadTokens) * m.CacheReadPer1M / 1_000_000
+	cost += float64(cacheCreateTokens) * m.CacheCreatePer1M / 1_000_000
 	return cost
 }
