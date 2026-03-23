@@ -286,15 +286,15 @@ const versus = {
     ctx.fillText(`${formatDate(data.date)} · ${formatTime(data.ts, data.tz)}`, w - pad, barY - 60);
     ctx.textAlign = 'left';
 
-    // Total
+    // Total tokens (line 1)
     ctx.font = '800 28px system-ui';
     ctx.fillStyle = '#fff';
-    const totalText = formatTokens(total);
-    const totalTextWidth = ctx.measureText(totalText).width;
-    ctx.fillText(totalText, pad, barY - 30);
-    ctx.font = '400 10px monospace';
+    ctx.fillText(`${formatTokens(total)} tokens`, pad, barY - 34);
+
+    // Cost + period (line 2)
+    ctx.font = '400 11px monospace';
     ctx.fillStyle = 'rgba(255,255,255,0.4)';
-    ctx.fillText(`tokens · $${data.cost.toFixed(2)}`, pad + totalTextWidth + 8, barY - 30);
+    ctx.fillText(`$${data.cost.toFixed(2)} · ${data.period.from}–${data.period.to}`, pad, barY - 16);
 
     // Percent bar
     const barW = w - pad * 2;
@@ -365,11 +365,6 @@ const versus = {
     ctx.fillStyle = 'rgba(255,255,255,0.2)';
     ctx.fillText('VS', w / 2, detailY + 22);
     ctx.textAlign = 'left';
-
-    // Period at bottom
-    ctx.font = '400 9px monospace';
-    ctx.fillStyle = 'rgba(255,255,255,0.3)';
-    ctx.fillText(`${data.period.from}–${data.period.to}`, pad, h - 16);
   }
 };
 
