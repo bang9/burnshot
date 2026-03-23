@@ -14,6 +14,7 @@ import (
 	"github.com/bang9/burnshot/internal/pricing"
 	"github.com/bang9/burnshot/internal/qr"
 	"github.com/bang9/burnshot/internal/summary"
+	"github.com/bang9/burnshot/internal/upgrade"
 )
 
 var version = "dev"
@@ -29,6 +30,9 @@ func main() {
 		fmt.Println(version)
 		return
 	}
+
+	// Self-upgrade check (skips in dev, cooldown 24h)
+	upgrade.CheckAndUpgrade(version)
 
 	// Handle subcommands
 	args := flag.Args()
