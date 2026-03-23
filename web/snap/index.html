@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Burnshot — Snap</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <div class="snap-container" id="app">
+    <div class="viewfinder-wrapper" id="viewfinder">
+      <video id="video" autoplay playsinline muted></video>
+      <canvas id="overlay"></canvas>
+    </div>
+    <p class="swipe-hint">← swipe to change template →</p>
+    <div class="template-dots" id="dots"></div>
+    <button class="capture-btn" id="capture" aria-label="Capture"></button>
+  </div>
+
+  <div class="error-screen" id="error" style="display:none">
+    <h2>Oops</h2>
+    <p id="error-msg"></p>
+  </div>
+
+  <!-- Hidden canvas for final 1080x1080 composite -->
+  <canvas id="composite" width="1080" height="1080" style="display:none"></canvas>
+
+  <script type="module" src="../js/firebase.js"></script>
+  <script type="module">
+    import { parseData } from '../js/data.js';
+    import { initCamera } from '../js/camera.js';
+    import { startOverlay, setTemplate } from '../js/overlay.js';
+    import { TEMPLATES } from '../js/templates.js';
+    import { initSwipe } from '../js/swipe.js';
+    import { initCapture } from '../js/capture.js';
+    import { trackEvent } from '../js/firebase.js';
+
+    const data = parseData();
+    if (!data) {
+      document.getElementById('app').style.display = 'none';
+      const errEl = document.getElementById('error');
+      errEl.style.display = 'flex';
+      document.getElementById('error-msg').textContent =
+        'Invalid burnshot data. Generate a new QR from your terminal.';
+    } else {
+      try {
+        await initCamera(document.getElementById('video'));
+        trackEvent('camera_granted');
+        startOverlay(document.getElementById('overlay'), document.getElementById('video'), data);
+        initSwipe(document.getElementById('viewfinder'), TEMPLATES, setTemplate, document.getElementById('dots'));
+        initCapture(
+          document.getElementById('capture'),
+          document.getElementById('video'),
+          document.getElementById('overlay'),
+          document.getElementById('composite')
+        );
+      } catch (err) {
+        document.getElementById('app').style.display = 'none';
+        const errEl = document.getElementById('error');
+        errEl.style.display = 'flex';
+        document.getElementById('error-msg').textContent =
+          'Camera access denied. Please allow camera access and refresh.';
+      }
+    }
+  </script>
+</body>
+</html>
