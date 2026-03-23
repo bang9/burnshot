@@ -21,6 +21,7 @@ body {
   font-family: var(--font-sans);
   line-height: 1.6;
   min-height: 100dvh;
+  overscroll-behavior: none;
 }
 
 /* Landing page */
@@ -108,17 +109,25 @@ footer a {
   flex-direction: column;
   align-items: center;
   height: 100dvh;
-  padding: 1rem;
-  gap: 1rem;
+  overflow: hidden;
 }
 
 .viewfinder-wrapper {
   position: relative;
-  width: min(100vw - 2rem, 100vh - 10rem);
+  width: 100vw;
   aspect-ratio: 1;
   overflow: hidden;
-  border-radius: 12px;
   background: #111;
+}
+
+.snap-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  flex: 1;
+  justify-content: center;
 }
 
 .viewfinder-wrapper video {
@@ -174,6 +183,34 @@ footer a {
 
 .capture-btn:active::after {
   transform: scale(0.9);
+}
+
+.zoom-pills {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+
+.zoom-pills button {
+  background: rgba(255,255,255,0.1);
+  border: none;
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.zoom-pills button.active {
+  background: rgba(255,255,255,0.25);
+  color: var(--fg);
+}
+
+.zoom-pills button:active:not(:disabled) {
+  opacity: 0.7;
 }
 
 .swipe-hint {

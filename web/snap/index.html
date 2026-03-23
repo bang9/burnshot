@@ -13,9 +13,17 @@
       <video id="video" autoplay playsinline muted></video>
       <canvas id="overlay"></canvas>
     </div>
-    <p class="swipe-hint">← swipe to change template →</p>
-    <div class="template-dots" id="dots"></div>
-    <button class="capture-btn" id="capture" aria-label="Capture"></button>
+    <div class="snap-controls">
+      <div class="zoom-pills" id="zoom-pills">
+        <button data-zoom="0.5">0.5x</button>
+        <button data-zoom="1" class="active">1x</button>
+        <button data-zoom="1.5">1.5x</button>
+        <button data-zoom="2">2x</button>
+      </div>
+      <p class="swipe-hint">← swipe to change template →</p>
+      <div class="template-dots" id="dots"></div>
+      <button class="capture-btn" id="capture" aria-label="Capture"></button>
+    </div>
   </div>
 
   <div class="error-screen" id="error" style="display:none">
@@ -29,7 +37,7 @@
   <script type="module" src="../js/firebase.js"></script>
   <script type="module">
     import { parseData } from '../js/data.js';
-    import { initCamera } from '../js/camera.js';
+    import { initCamera, setZoom, hasHardwareZoom } from '../js/camera.js';
     import { startOverlay, setTemplate } from '../js/overlay.js';
     import { TEMPLATES } from '../js/templates.js';
     import { initSwipe } from '../js/swipe.js';
@@ -61,6 +69,21 @@
           document.getElementById('overlay'),
           document.getElementById('composite')
         );
+
+        // Zoom pill buttons
+        const zoomPills = document.getElementById('zoom-pills');
+        if (!hasHardwareZoom()) {
+          const btn05 = zoomPills.querySelector('[data-zoom="0.5"]');
+          if (btn05) { btn05.disabled = true; btn05.style.opacity = '0.3'; }
+        }
+        zoomPills.addEventListener('click', (e) => {
+          const btn = e.target.closest('[data-zoom]');
+          if (!btn || btn.disabled) return;
+          const level = parseFloat(btn.dataset.zoom);
+          setZoom(level);
+          zoomPills.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+        });
       } catch (err) {
         document.getElementById('app').style.display = 'none';
         const errEl = document.getElementById('error');
