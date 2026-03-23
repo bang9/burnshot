@@ -1,3 +1,4 @@
 dist/
+burnshot
 *.exe
 .DS_Store
