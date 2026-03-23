@@ -45,9 +45,8 @@ func TestBuild(t *testing.T) {
 
 func TestEncode_Decode(t *testing.T) {
 	s := &Payload{
-		Version:  1,
-		Template: "default",
-		Tokens:   TokenInfo{Total: 100},
+		Version: 1,
+		Tokens:  TokenInfo{Total: 100},
 	}
 
 	encoded := s.Encode()

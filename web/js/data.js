@@ -9,9 +9,19 @@ export function parseData() {
     const json = atob(base64);
     const data = JSON.parse(json);
 
-    if (!data.v || !data.tokens) return null;
+    if (!data.v || !data.tk) return null;
     if (data.v > 1) return { error: 'version_mismatch' };
-    return data;
+    // Expand short keys to readable names for templates
+    return {
+      v: data.v,
+      ts: data.ts,
+      tz: data.tz,
+      date: data.d,
+      period: { from: data.p.f, to: data.p.t },
+      tokens: { input: data.tk.i, output: data.tk.o, total: data.tk.t, by_source: data.tk.s },
+      cost: data.c,
+      sessions: { total: data.ss.t, claude: data.ss.c, codex: data.ss.x },
+    };
   } catch {
     return null;
   }

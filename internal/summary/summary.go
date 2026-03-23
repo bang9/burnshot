@@ -14,44 +14,40 @@ import (
 const BaseURL = "https://bang9.github.io/burnshot/snap/"
 
 type TokenInfo struct {
-	Input    int64            `json:"input"`
-	Output   int64            `json:"output"`
-	Total    int64            `json:"total"`
-	BySource map[string]int64 `json:"by_source"`
+	Input    int64            `json:"i"`
+	Output   int64            `json:"o"`
+	Total    int64            `json:"t"`
+	BySource map[string]int64 `json:"s,omitempty"`
 }
 
 type SessionInfo struct {
-	Total  int `json:"total"`
-	Claude int `json:"claude"`
-	Codex  int `json:"codex"`
+	Total  int `json:"t"`
+	Claude int `json:"c"`
+	Codex  int `json:"x"`
 }
 
 type Period struct {
-	From string `json:"from"`
-	To   string `json:"to"`
+	From string `json:"f"`
+	To   string `json:"t"`
 }
 
 type Payload struct {
 	Version  int         `json:"v"`
-	Template string      `json:"template"`
 	TS       int64       `json:"ts"`
 	TZ       string      `json:"tz"`
-	Date     string      `json:"date"`
-	Period   Period      `json:"period"`
-	Tokens   TokenInfo   `json:"tokens"`
-	Cost     float64     `json:"cost"`
-	Currency string      `json:"currency"`
-	Sessions SessionInfo `json:"sessions"`
+	Date     string      `json:"d"`
+	Period   Period      `json:"p"`
+	Tokens   TokenInfo   `json:"tk"`
+	Cost     float64     `json:"c"`
+	Sessions SessionInfo `json:"ss"`
 }
 
 func Build(sessions []collector.Session, p *pricing.PricingData, window burnday.Window, now time.Time) *Payload {
 	payload := &Payload{
-		Version:  1,
-		Template: "default",
-		TS:       now.Unix(),
-		TZ:       now.Location().String(),
-		Date:     now.Format("2006-01-02"),
-		Currency: "USD",
+		Version: 1,
+		TS:      now.Unix(),
+		TZ:      now.Location().String(),
+		Date:    now.Format("2006-01-02"),
 		Tokens: TokenInfo{
 			BySource: make(map[string]int64),
 		},

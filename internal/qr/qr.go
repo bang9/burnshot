@@ -7,11 +7,5 @@ import (
 )
 
 func Render(w io.Writer, url string) {
-	qrterminal.GenerateWithConfig(url, qrterminal.Config{
-		Level:     qrterminal.L,
-		Writer:    w,
-		BlackChar: qrterminal.BLACK,
-		WhiteChar: qrterminal.WHITE,
-		QuietZone: 1,
-	})
+	qrterminal.GenerateHalfBlock(url, qrterminal.L, w)
 }
