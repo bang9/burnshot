@@ -258,8 +258,8 @@ const glass = {
 const versus = {
   name: 'VS',
   render(ctx, w, h, data) {
-    const claudeColor = '#c084fc'; // purple
-    const codexColor = '#34d399';  // green
+    const claudeColor = '#d97757'; // Claude signature orange
+    const codexColor = '#6fde8a';  // Codex signature green
     const by = data.tokens.by_source || {};
     const claudeTokens = by.claude || 0;
     const codexTokens = by.codex || 0;
