@@ -1,0 +1,7 @@
+{
+  "session_id": "test-session-3",
+  "input_tokens": 75000,
+  "output_tokens": 30000,
+  "start_time": "2026-03-22T08:00:00Z",
+  "duration_minutes": 45
+}
